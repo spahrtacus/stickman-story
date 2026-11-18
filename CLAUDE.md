@@ -16,6 +16,7 @@ Read this file first. It is short on purpose: open only the files it points to.
 | Floor, wall, desk, monitor, chair, board, label | `src/environment/Furniture.tsx` |
 | Captions (`CaptionTrack`, cues with `from`, `to`, `text`, `pos`, `y`) | `src/captions/CaptionTrack.tsx` |
 | Optional narration (`Narration`) | `src/audio/Narration.tsx` |
+| Fit scenes to narration length (`measureNarration, fitScenes, remapFrame`) | `src/audio/fitToNarration.ts` |
 | Colours, font, frame size | `src/styles/palette.ts` |
 | The list of videos you can render | `src/Root.tsx` |
 
@@ -59,7 +60,7 @@ Check a still at each caption's start and at any camera move before a full rende
 - **Start a new scene:** copy the closest example in `src/scenes/`, rename it, register it in `src/Root.tsx`, and change its numbers.
 - **Modify a character:** reskin a look in `src/rig/looks.tsx` (change `top`, `trousers`, `coat`, `headExtra`), or write `{...CASUAL, top: "#..."}`.
 - **Add an environment:** use `Wall, Floor, Desk, Monitor, OfficeChair, Board, Label` from `src/environment/Furniture.tsx`, on `Layer` depths 0.5 (back) and 1 (front).
-- **Import audio:** put the user's MP3 in `public/audio/`, then pass `narration: "audio/file.mp3"` (see `Example03MiniDocumentary`).
+- **Import audio:** put the user's MP3 in `public/audio/`, then pass `narration: "audio/file.mp3"`. `Example03` measures it and fits its scenes and captions automatically; reuse its `calculateMetadata` for new films. `npm run narration -- public/audio/file.mp3` prints the length in frames. Don't hand-calculate durations.
 - **Add captions:** a list of `{from, to, text, pos?, y?}` frames, passed to `<CaptionTrack cues={...} />`. Check placement with a still.
 - **Render:** `npm run render -- <Id> out/<name>.mp4`. Check a still first with `npm run still -- <Id> out/check.png --frame=<n>`.
 

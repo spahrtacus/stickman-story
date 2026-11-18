@@ -444,20 +444,26 @@ Pisahkan dua jenis panduan ini:
 
 ## Langkah 5 — Menyinkronkan Narasi dengan Animasi
 
-Kit ini bisa memutar MP3 yang Anda sediakan. Kit ini **tidak** mendeteksi panjang audio Anda atau memotong animasi mengikutinya secara otomatis.
-Anda mengatur waktunya sendiri, dalam frame (30 frame = 1 detik).
+Kit ini mengukur narasi Anda secara otomatis. Saat Anda memberikan MP3 ke `Example03-MiniDocumentary`, komposisi membaca panjang
+file yang sebenarnya, menambahkan jeda setengah detik di akhir agar kata terakhir tidak terpotong, lalu merentangkan ketiga adegan dan
+caption-nya agar pas. Setiap adegan tetap memakai porsi yang sama dari film (30 frame = 1 detik).
 
 1. **Impor MP3.** Salin ke `public/audio/`. Contoh: `public/audio/narasi-saya.mp3`.
-2. **Cari panjangnya.** Buka file itu di pemutar audio apa pun, atau di editor Anda, lalu catat durasinya dalam detik. Kalikan 30 untuk mendapatkan frame.
-3. **Cocokkan adegan dengan narasi.** Di `src/scenes/Example03MiniDocumentary.tsx`, konstanta `SCENE1`, `SCENE2`, dan `SCENE3` mengatur
-   frame awal dan panjang setiap adegan. Pastikan total panjang adegan minimal sama dengan narasi.
-4. **Putar narasinya.** Berikan file itu ke komposisi:
+2. **Periksa panjangnya (opsional).** `npm run narration -- public/audio/narasi-saya.mp3` menampilkan panjang dalam detik dan frame,
+   pembagian adegan yang disesuaikan, dan perintah render.
+3. **Putar narasinya.** Berikan file itu ke komposisi. Panjang video diatur dari file tersebut:
 
    ```bash
    npm run render -- Example03-MiniDocumentary out/mini.mp4 --props='{"narration":"audio/narasi-saya.mp3"}'
    ```
 
-5. **Pratinjau dan sesuaikan.** Buka Remotion Studio, pastikan tidak ada kata yang terpotong, dan ubah panjang adegan bila perlu.
+4. **Atur pembagian sendiri (opsional).** Penyesuaian otomatis mempertahankan proporsi asli. Untuk menyelaraskan adegan dengan kalimat
+   tertentu, berikan panjang adegan dalam frame: `--props='{"narration":"audio/narasi-saya.mp3","scenes":[120,240,180]}'`.
+5. **Pratinjau dan sesuaikan.** Buka Remotion Studio, isi props yang sama di panel props, dan pastikan setiap pergantian adegan jatuh
+   tepat saat kalimatnya dimulai.
+
+Untuk film multi-adegan Anda sendiri, gunakan kembali `measureNarration`, `fitScenes`, dan `remapFrame` dari
+`src/audio/fitToNarration.ts`, lalu salin pengaturan `calculateMetadata` dari `Example03` di `src/Root.tsx`.
 
 Panduan:
 
@@ -471,9 +477,9 @@ Panduan:
 ```text
 Impor file narasi saya di public/audio/[NAMA-FILE].mp3 ke Example03MiniDocumentary.
 
-Baca durasi narasi dari file tersebut dan ubah menjadi frame pada 30 fps.
+Jalankan npm run narration pada file tersebut untuk mendapatkan panjangnya dan pembagian adegan otomatis.
 
-Sesuaikan SCENE1, SCENE2, dan SCENE3 agar total durasi adegan minimal sama dengan narasi, tanpa memotong kata apa pun.
+Jika pergantian adegan tidak jatuh tepat saat kalimatnya dimulai, berikan prop scenes dengan panjang adegan saya sendiri dalam frame, tanpa memotong kata apa pun.
 
 Jangan mempercepat atau memperlambat narasi.
 
@@ -487,9 +493,9 @@ Pratinjau hasilnya dan laporkan adegan yang terasa terlalu pendek atau terlalu p
 ```text
 Import my narration file at public/audio/[FILENAME].mp3 into Example03MiniDocumentary.
 
-Read the narration length from the file and convert it to frames at 30 fps.
+Run npm run narration on the file to get its length and the automatic scene split.
 
-Adjust SCENE1, SCENE2 and SCENE3 so the scenes together last at least as long as the narration, without cutting any words.
+If a scene change does not land where its sentence starts, pass a scenes prop with my own lengths in frames, without cutting any words.
 
 Do not speed up or slow down the narration.
 
@@ -509,7 +515,7 @@ Yang didukung komponen publik ini:
 - Frame awal (`from`) dan frame akhir (`to`).
 - Empat posisi bernama (`top`, `upper`, `mid`, `lower`), atau tinggi apa pun dengan `y` dalam piksel. Nilai bawaannya `lower`.
 - Margin 90 piksel di kiri dan kanan.
-- Huruf 54 piksel (Inter, dari Google Fonts), warna teks terang, dan bayangan gelap.
+- Huruf 54 piksel (Inter, disertakan di `public/fonts/`), warna teks terang, dan bayangan gelap.
 
 ```tsx
 import {CaptionCue, CaptionTrack} from "../captions/CaptionTrack";
@@ -606,7 +612,7 @@ Setiap contoh adalah komposisi yang lengkap. Buka di Remotion Studio, lalu ubah 
 - **Komposisi:** `Example03-MiniDocumentary` (11 detik, tiga adegan).
 - **File:** `src/scenes/Example03MiniDocumentary.tsx`.
 - **Komponen:** `Sequence` (tiga adegan), `Stickman` dengan pose `point`, `Board`, `Label`, `Glow`, `Camera2D`, `CaptionTrack`, `Narration` (audio opsional).
-- **Yang bisa diubah:** panjang adegan (`SCENE1`, `SCENE2`, `SCENE3`), teks papan tulis, label diagram, caption, dan file narasi.
+- **Yang bisa diubah:** panjang adegan dasar (`BASE_SCENES`, dipakai saat tidak ada narasi), teks papan tulis, label diagram, caption, dan file narasi.
 - **Pratinjau:** `npm run studio`, lalu pilih `Example03-MiniDocumentary`.
 - **Render tanpa suara:** `npm run render -- Example03-MiniDocumentary out/mini.mp4`.
 - **Render dengan narasi:** `npm run render -- Example03-MiniDocumentary out/mini.mp4 --props='{"narration":"audio/narasi-saya.mp3"}'`.
@@ -682,9 +688,12 @@ src/
   environment/Furniture.tsx   lantai, dinding, meja, monitor, kursi, papan tulis
   captions/CaptionTrack.tsx   caption berwaktu
   audio/Narration.tsx   narasi MP3 opsional
+  audio/fitToNarration.ts   mengukur MP3 dan menyesuaikan adegan
   scenes/Example0*.tsx  tiga contoh
 public/audio/           tempat file narasi MP3 Anda (tidak ada audio yang disertakan)
-docs/                   panduan (termasuk GITHUB_RELEASE_GUIDE.md)
+public/fonts/           font caption Inter (SIL Open Font License)
+scripts/                narration-length.mjs (npm run narration)
+docs/                   panduan
 CLAUDE.md               instruksi untuk Claude Code
 ```
 
@@ -699,7 +708,7 @@ Jika port 3000 sedang dipakai, tutup program yang memakainya, lalu jalankan `npm
 
 **Render gagal dengan pesan tentang browser.** Remotion mengunduh browser headless pada pertama kali. Periksa koneksi internet Anda, lalu jalankan perintah lagi.
 
-**Caption memakai font biasa.** Font Inter dimuat dari Google Fonts. Periksa koneksi Anda, lalu coba lagi.
+**Caption memakai font biasa.** Pastikan `public/fonts/` masih berisi tiga file `Inter-*.woff2`.
 
 **Karakter melayang di atas tanah atau tenggelam ke dalamnya.** Karakter yang berdiri memerlukan `y={FLOOR}`. Karakter yang duduk memerlukan `anchor="hip"` dengan `seatedAnchor`.
 
@@ -717,7 +726,7 @@ Bantuan lainnya: [`docs/GETTING_STARTED.md`](docs/GETTING_STARTED.md).
 - **Dokumentasi** (`README.md`, `README.id.md`, `CLAUDE.md`, dan `docs/`): Creative Commons Attribution 4.0 (CC BY 4.0). Lihat [`docs/LICENSE.md`](docs/LICENSE.md).
 - **Remotion** memiliki lisensinya sendiri. Ia gratis untuk individu dan organisasi dengan hingga 3 karyawan. Organisasi komersial yang lebih besar memerlukan lisensi perusahaan. Lihat <https://www.remotion.dev/license>.
 - **ElevenLabs** memiliki ketentuan penggunaan dan batasan paketnya sendiri. Lihat <https://try.elevenlabs.io/lkcjgejny6xh>.
-- **Inter** (font caption) dimuat dari Google Fonts saat Anda merender. Tidak ada file font yang disertakan.
+- **Inter** (font caption) disertakan di `public/fonts/` dengan SIL Open Font License (lihat `public/fonts/OFL-LICENSE.txt`).
 - **Tidak ada audio, gambar, atau logo yang disertakan.** Narasi menjadi tanggung jawab Anda. Gunakan hanya audio dan suara yang Anda berhak memakainya.
 - **Layanan dan aset pihak ketiga:** repositori ini tidak memberikan hak apa pun atas alat, suara, font, atau aset pihak ketiga lainnya.
 
@@ -726,5 +735,5 @@ Ini adalah **starter kit edukatif publik**. Ini bukan mesin produksi dokumenter 
 ## Ucapan terima kasih
 
 - Dibangun dengan [Remotion](https://www.remotion.dev), React, dan [TypeScript](https://www.typescriptlang.org).
-- Font caption adalah [Inter](https://rsms.me/inter/) karya Rasmus Andersson, dimuat dari Google Fonts.
+- Font caption adalah [Inter](https://rsms.me/inter/) karya Rasmus Andersson, disertakan dari paket `@fontsource/inter`.
 - Alat alur kerja yang disebut dalam panduan ini: ChatGPT, [Claude Code](https://claude.com/claude-code), dan [ElevenLabs](https://try.elevenlabs.io/lkcjgejny6xh).

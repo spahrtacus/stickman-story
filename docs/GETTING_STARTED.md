@@ -85,8 +85,8 @@ Save the file. The studio updates at once. Then read the [character guide](CHARA
 **The render stops with an error about Chromium.** Remotion downloads a headless browser the first time. Check your internet
 connection and run the command again. If a proxy blocks the download, see the Remotion documentation for setting a browser path.
 
-**The captions look like a generic sans-serif.** The Inter font is loaded from Google Fonts when the project starts. If the font
-cannot load, check your internet connection and try again.
+**The captions look like a generic sans-serif.** The Inter font is bundled in `public/fonts/`. Check that the three
+`Inter-*.woff2` files are still there.
 
 **`tsc` reports a type error after you edit a scene.** The most common cause is a camera keyframe missing `rot`. Every camera
 object needs `x`, `y`, `zoom` and `rot`. Add `rot: 0`.

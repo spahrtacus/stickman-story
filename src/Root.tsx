@@ -2,7 +2,7 @@ import React from "react";
 import {Composition} from "remotion";
 import {Example01WalkingStickman, EXAMPLE01_FRAMES} from "./scenes/Example01WalkingStickman";
 import {Example02OfficeScene, EXAMPLE02_FRAMES} from "./scenes/Example02OfficeScene";
-import {Example03MiniDocumentary, EXAMPLE03_FRAMES} from "./scenes/Example03MiniDocumentary";
+import {calcExample03, Example03MiniDocumentary, EXAMPLE03_FRAMES} from "./scenes/Example03MiniDocumentary";
 import {FPS, H, W} from "./styles/palette";
 
 // One composition per example. Render with: npx remotion render src/index.ts <Id> out/<name>.mp4
@@ -17,7 +17,8 @@ export const Root: React.FC = () => (
       fps={FPS}
       width={W}
       height={H}
-      defaultProps={{narration: undefined}}
+      defaultProps={{narration: undefined, scenes: undefined}}
+      calculateMetadata={calcExample03}
     />
   </>
 );

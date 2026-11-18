@@ -1,4 +1,5 @@
-import {loadFont as loadInter} from "@remotion/google-fonts/Inter";
+import {loadFont} from "@remotion/fonts";
+import {staticFile} from "remotion";
 
 // Starter palette: a dark, minimal look with bone-white figures and a warm accent.
 // Change these values to restyle every character and room at once.
@@ -24,8 +25,12 @@ export const C = {
   red: "#D2483C",
 };
 
-// Inter (SIL Open Font License) is loaded through @remotion/google-fonts.
-export const FONT = loadInter("normal", {weights: ["600", "700", "800"], subsets: ["latin"]}).fontFamily;
+// Inter (SIL Open Font License, see public/fonts/OFL-LICENSE.txt) is bundled in public/fonts,
+// so rendering works offline and never depends on Google Fonts being reachable.
+export const FONT = "Inter";
+for (const weight of ["600", "700", "800"]) {
+  loadFont({family: FONT, url: staticFile(`fonts/Inter-${weight}.woff2`), weight, format: "woff2"});
+}
 
 export const W = 1080;
 export const H = 1920;

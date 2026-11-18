@@ -31,11 +31,12 @@ The narration starts at the beginning of the scene where it is placed. `volume` 
 
 ### Keep the timing
 
-- Set the composition length to match your narration. Measure the MP3 length in seconds and multiply by 30 for frames. A 10.5-second
-  narration needs 315 frames. Round up so the last word is not cut.
-- Place each scene's start frame at the moment its narration begins. Scenes can be longer than their narration, but never
-  shorter.
-- Adjust each scene's length in frames in `Example03MiniDocumentary.tsx` (`SCENE1`, `SCENE2`, `SCENE3`).
+- `Example03` sizes itself to the narration: it measures the MP3, adds a 15-frame tail, and scales the scenes and captions to fit.
+- `npm run narration -- public/audio/<file>.mp3` prints the length in seconds and frames and the fitted scene split.
+- To place scene changes on specific sentences, pass `scenes` (lengths in frames) next to `narration`. Scenes can be longer
+  than their narration, but never shorter.
+- For your own films, use `measureNarration`, `fitScenes` and `remapFrame` from `src/audio/fitToNarration.ts` in a
+  `calculateMetadata` function, as `Example03` does in `src/Root.tsx`.
 
 ### Rights
 

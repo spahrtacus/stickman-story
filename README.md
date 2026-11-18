@@ -446,20 +446,26 @@ Keep the two kinds of guidance apart:
 
 ## Step 5 — Synchronize narration with animation
 
-This kit can play an MP3 that you provide. It does **not** detect the length of your audio or cut the animation to it automatically.
-You set the timing by hand, in frames (30 frames = 1 second).
+This kit measures your narration for you. When you pass an MP3 to `Example03-MiniDocumentary`, the composition reads the file's real
+length, adds a half-second tail so the last word is never cut, and stretches the three scenes and their captions to fit. Each scene keeps
+its share of the film (30 frames = 1 second).
 
 1. **Import the MP3.** Copy it to `public/audio/`. Example: `public/audio/my-narration.mp3`.
-2. **Find its length.** Open it in any audio player, or in your editor, and note the duration in seconds. Multiply by 30 to get frames.
-3. **Match scenes to narration.** In `src/scenes/Example03MiniDocumentary.tsx`, the constants `SCENE1`, `SCENE2` and `SCENE3` set each
-   scene's start frame and length. Make the total length of the scenes at least as long as the narration.
-4. **Play the narration.** Pass the file to the composition:
+2. **Check its length (optional).** `npm run narration -- public/audio/my-narration.mp3` prints the length in seconds and frames, the
+   fitted scene split, and the render command.
+3. **Play the narration.** Pass the file to the composition. The length is set from the file:
 
    ```bash
    npm run render -- Example03-MiniDocumentary out/mini.mp4 --props='{"narration":"audio/my-narration.mp3"}'
    ```
 
-5. **Preview and adjust.** Open Remotion Studio, check that words are not cut, and change the scene lengths if needed.
+4. **Set your own split (optional).** The automatic fit keeps the original proportions. To line a scene up with a specific sentence,
+   pass the scene lengths in frames instead: `--props='{"narration":"audio/my-narration.mp3","scenes":[120,240,180]}'`.
+5. **Preview and adjust.** Open Remotion Studio, enter the same props in the props panel, and check that each scene change lands
+   where its sentence starts.
+
+To fit your own multi-scene film the same way, reuse `measureNarration`, `fitScenes` and `remapFrame` from
+`src/audio/fitToNarration.ts`, and copy the `calculateMetadata` setup from `Example03` in `src/Root.tsx`.
 
 Guidelines:
 
@@ -473,9 +479,9 @@ Guidelines:
 ```text
 Import my narration file at public/audio/[FILENAME].mp3 into Example03MiniDocumentary.
 
-Read the narration length from the file and convert it to frames at 30 fps.
+Run npm run narration on the file to get its length and the automatic scene split.
 
-Adjust SCENE1, SCENE2 and SCENE3 so the scenes together last at least as long as the narration, without cutting any words.
+If a scene change does not land where its sentence starts, pass a scenes prop with my own lengths in frames, without cutting any words.
 
 Do not speed up or slow down the narration.
 
@@ -489,9 +495,9 @@ Preview the result and report any scene that feels too short or too long.
 ```text
 Impor file narasi saya di public/audio/[NAMA-FILE].mp3 ke Example03MiniDocumentary.
 
-Baca durasi narasi dari file tersebut dan ubah menjadi frame pada 30 fps.
+Jalankan npm run narration pada file tersebut untuk mendapatkan panjangnya dan pembagian adegan otomatis.
 
-Sesuaikan SCENE1, SCENE2, dan SCENE3 agar total durasi adegan minimal sama dengan narasi, tanpa memotong kata apa pun.
+Jika pergantian adegan tidak jatuh tepat saat kalimatnya dimulai, berikan prop scenes dengan panjang adegan saya sendiri dalam frame, tanpa memotong kata apa pun.
 
 Jangan mempercepat atau memperlambat narasi.
 
@@ -511,7 +517,7 @@ What the public component supports:
 - A start frame (`from`) and an end frame (`to`).
 - Four named placements (`top`, `upper`, `mid`, `lower`), or any height you choose with `y` in pixels. The default is `lower`.
 - A 90-pixel margin on the left and the right.
-- A 54-pixel font (Inter, from Google Fonts), a light text colour and a dark shadow.
+- A 54-pixel font (Inter, bundled in `public/fonts/`), a light text colour and a dark shadow.
 
 ```tsx
 import {CaptionCue, CaptionTrack} from "../captions/CaptionTrack";
@@ -608,7 +614,7 @@ Each example is a complete composition. Open it in Remotion Studio, then change 
 - **Composition:** `Example03-MiniDocumentary` (11 seconds, three scenes).
 - **File:** `src/scenes/Example03MiniDocumentary.tsx`.
 - **Components:** `Sequence` (three scenes), `Stickman` with `point` (pose), `Board`, `Label`, `Glow`, `Camera2D`, `CaptionTrack`, `Narration` (optional audio).
-- **What you can change:** the scene lengths (`SCENE1`, `SCENE2`, `SCENE3`), the board text, the diagram labels, the captions and the narration file.
+- **What you can change:** the base scene lengths (`BASE_SCENES`, used when there is no narration), the board text, the diagram labels, the captions and the narration file.
 - **Preview:** `npm run studio`, then choose `Example03-MiniDocumentary`.
 - **Render silently:** `npm run render -- Example03-MiniDocumentary out/mini.mp4`.
 - **Render with narration:** `npm run render -- Example03-MiniDocumentary out/mini.mp4 --props='{"narration":"audio/my-narration.mp3"}'`.
@@ -684,9 +690,12 @@ src/
   environment/Furniture.tsx   floor, wall, desk, monitor, chair, board
   captions/CaptionTrack.tsx   timed captions
   audio/Narration.tsx   optional MP3 narration
+  audio/fitToNarration.ts   measure an MP3 and fit scenes to it
   scenes/Example0*.tsx  the three examples
 public/audio/           your own MP3 narration goes here (no audio is included)
-docs/                   guides (including GITHUB_RELEASE_GUIDE.md)
+public/fonts/           Inter caption font (SIL Open Font License)
+scripts/                narration-length.mjs (npm run narration)
+docs/                   guides
 CLAUDE.md               instructions for Claude Code
 ```
 
@@ -701,7 +710,7 @@ If port 3000 is busy, close the program that uses it, then run `npm run studio` 
 
 **The render fails with a message about a browser.** Remotion downloads a headless browser the first time. Check your internet connection, then run the command again.
 
-**The captions use a plain font.** The Inter font loads from Google Fonts. Check your connection, then try again.
+**The captions use a plain font.** Check that `public/fonts/` still holds the three `Inter-*.woff2` files.
 
 **The character floats above the ground or sinks into it.** A standing character needs `y={FLOOR}`. A seated character needs `anchor="hip"` with `seatedAnchor`.
 
@@ -719,7 +728,7 @@ More help: [`docs/GETTING_STARTED.md`](docs/GETTING_STARTED.md).
 - **Documentation** (`README.md`, `README.id.md`, `CLAUDE.md` and `docs/`): Creative Commons Attribution 4.0 (CC BY 4.0). See [`docs/LICENSE.md`](docs/LICENSE.md).
 - **Remotion** has its own license. It is free for individuals and for organizations with up to 3 employees. Larger for-profit organizations need a company license. See <https://www.remotion.dev/license>.
 - **ElevenLabs** has its own terms of use and plan limits. See <https://try.elevenlabs.io/lkcjgejny6xh>.
-- **Inter** (the caption font) is loaded from Google Fonts when you render. No font file is included.
+- **Inter** (the caption font) is bundled in `public/fonts/` under the SIL Open Font License (see `public/fonts/OFL-LICENSE.txt`).
 - **No audio, pictures or logos are included.** Narration is yours to supply. Only use audio and voices you have the right to use.
 - **Third-party services and assets:** this repository does not grant any rights to third-party tools, voices, fonts or other assets.
 
@@ -729,5 +738,5 @@ documentary source code, advanced transition systems, private asset registries, 
 ## Acknowledgments
 
 - Built with [Remotion](https://www.remotion.dev), React and [TypeScript](https://www.typescriptlang.org).
-- The caption typeface is [Inter](https://rsms.me/inter/) by Rasmus Andersson, loaded from Google Fonts.
+- The caption typeface is [Inter](https://rsms.me/inter/) by Rasmus Andersson, bundled from the `@fontsource/inter` package.
 - Workflow tools referenced in this guide: ChatGPT, [Claude Code](https://claude.com/claude-code) and [ElevenLabs](https://try.elevenlabs.io/lkcjgejny6xh).

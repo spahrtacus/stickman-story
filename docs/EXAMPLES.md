@@ -94,7 +94,8 @@ npm run render -- Example03-MiniDocumentary out/mini-narrated.mp4 --props='{"nar
 
 **Things to change**
 
-- `SCENE1`, `SCENE2` and `SCENE3` set each scene's start and length. Keep them matched to your narration.
+- `BASE_SCENES` sets the scene lengths when there is no narration. With narration they are fitted to the MP3 automatically;
+  pass `scenes` in the props to set them yourself.
 - The board text (`IDEA`) and the three diagram labels (`steps`) are plain text.
 - `CAPTIONS` sets the captions and their frames.
 
